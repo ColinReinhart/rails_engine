@@ -87,4 +87,24 @@ RSpec.describe "Items API" do
     expect(item.unit_price).to eq(314.15)
     expect(item.merchant_id).to eq(merch_id)
   end
+
+  it "can delete an item" do
+    merch_id = create(:merchant).id
+    item = create(:item, merchant_id: merch_id)
+
+    get '/api/v1/items'
+
+    parsed = JSON.parse(response.body, symbolize_names: true)
+
+    expect(parsed).to have_key(:data)
+    expect(parsed[:data]).to be_a(Array)
+
+    items = parsed[:data]
+
+    expect(Item.all.count).to eq(1)
+
+    delete "/api/v1/items/#{item.id}"
+
+    expect(Item.all.count).to eq(0)
+  end
 end
