@@ -107,4 +107,10 @@ RSpec.describe "Items API" do
 
     expect(Item.all.count).to eq(0)
   end
+
+  it "sends 404 error if item does not exist" do
+    delete "/api/v1/items/1"
+
+    expect(response.status).to eq(404)
+  end
 end
