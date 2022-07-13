@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 describe "Merchant API" do
-  it "happy path, all merchants returned are same as in db" do
+  it "can get all merchants" do
     create_list(:merchant, 3)
 
     get '/api/v1/merchants'
