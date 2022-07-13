@@ -63,4 +63,28 @@ RSpec.describe "Items API" do
     expect(item_name).to_not have_key(:created_at)
     expect(item_name).to_not have_key(:updated_at)
   end
+
+  it "can create item" do
+    merch_id = create(:merchant).id
+
+    params = {
+      name: "Item Name",
+      description: "Item Description",
+      unit_price: 314.15,
+      merchant_id: merch_id
+    }
+
+    headers = { 'CONTENT_TYPE' => 'application/json' }
+
+    post '/api/v1/items', headers: headers, params: JSON.generate(item: params)
+
+    expect(response.status).to eq(201)
+
+    item = Item.last
+
+    expect(item.name).to eq("Item Name")
+    expect(item.description).to eq("Item Description")
+    expect(item.unit_price).to eq(314.15)
+    expect(item.merchant_id).to eq(merch_id)
+  end
 end
