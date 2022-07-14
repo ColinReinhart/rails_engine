@@ -63,4 +63,117 @@ RSpec.describe "Items API" do
     expect(item_name).to_not have_key(:created_at)
     expect(item_name).to_not have_key(:updated_at)
   end
+
+  it "can create item" do
+    merch_id = create(:merchant).id
+
+    params = {
+      name: "Item Name",
+      description: "Item Description",
+      unit_price: 314.15,
+      merchant_id: merch_id
+    }
+
+    headers = { 'CONTENT_TYPE' => 'application/json' }
+
+    post '/api/v1/items', headers: headers, params: JSON.generate(item: params)
+
+    expect(response.status).to eq(201)
+
+    item = Item.last
+
+    expect(item.name).to eq("Item Name")
+    expect(item.description).to eq("Item Description")
+    expect(item.unit_price).to eq(314.15)
+    expect(item.merchant_id).to eq(merch_id)
+  end
+
+  it "can delete an item" do
+    merch_id = create(:merchant).id
+    item = create(:item, merchant_id: merch_id)
+
+    get '/api/v1/items'
+
+    parsed = JSON.parse(response.body, symbolize_names: true)
+
+    expect(parsed).to have_key(:data)
+    expect(parsed[:data]).to be_a(Array)
+
+    items = parsed[:data]
+
+    expect(Item.all.count).to eq(1)
+
+    delete "/api/v1/items/#{item.id}"
+
+    expect(Item.all.count).to eq(0)
+  end
+
+  it "sends 404 error if item does not exist" do
+    delete "/api/v1/items/1"
+
+    expect(response.status).to eq(404)
+  end
+
+  it "can update item" do
+    merch_id = create(:merchant).id
+    item = create(:item, merchant_id: merch_id)
+
+    expect(item.name).to_not eq("Item Name")
+    expect(item.description).to include("Chuck")
+    expect(item.unit_price).to_not eq(314.15)
+
+    params = {
+      name: "Item Name",
+      description: "Item Description",
+      unit_price: 314.15,
+      merchant_id: merch_id
+    }
+
+    headers = { 'CONTENT_TYPE' => 'application/json' }
+
+    put "/api/v1/items/#{item.id}", headers: headers, params: JSON.generate(item: params)
+
+    expect(Item.first.name).to eq("Item Name")
+    expect(Item.first.description).to eq("Item Description")
+    expect(Item.first.unit_price).to eq(314.15)
+  end
+
+  it "create sad path" do
+    merch_id = create(:merchant).id
+
+    params = {
+      name: "",
+      description: "Item Description",
+      unit_price: 314.15,
+      merchant_id: merch_id
+    }
+
+    headers = { 'CONTENT_TYPE' => 'application/json' }
+
+    post '/api/v1/items', headers: headers, params: JSON.generate(item: params)
+
+    expect(response.status).to eq(400)
+  end
+
+  it "update sad paths" do
+    merch_id = create(:merchant).id
+    item = create(:item, merchant_id: merch_id)
+
+    expect(item.name).to_not eq("Item Name")
+    expect(item.description).to include("Chuck")
+    expect(item.unit_price).to_not eq(314.15)
+
+    params = {
+      name: "Item Name",
+      description: "Item Description",
+      unit_price: 314.15,
+      merchant_id: merch_id
+    }
+
+    headers = { 'CONTENT_TYPE' => 'application/json' }
+
+    put "/api/v1/items/1", headers: headers, params: JSON.generate(item: params)
+
+    expect(response.status).to eq(404)
+  end
 end
