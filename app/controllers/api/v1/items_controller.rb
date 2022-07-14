@@ -4,11 +4,16 @@ class Api::V1::ItemsController < ApplicationController
   end
 
   def show
-    render json: ItemSerializer.new(Item.find(params[:id]))
+    render json: ItemSerializer.new(Item.find(params[:id]),  status: :ok)
   end
 
   def create
-    render json: ItemSerializer.new(Item.create(item_params)), status: 201
+    item = Item.create(item_params)
+    if item.save
+      render json: ItemSerializer.new(item), status: 201
+    else
+      render json: { :message => "Item Not Created"}, status: 400
+    end
   end
 
   def destroy
@@ -23,6 +28,11 @@ class Api::V1::ItemsController < ApplicationController
     if Item.exists?(params[:id])
       item = Item.find(params[:id])
       item.update(item_params)
+      if item.save
+        render json: ItemSerializer.new(item)
+      else
+        render status: 404
+      end
     else
       render status: 404
     end
