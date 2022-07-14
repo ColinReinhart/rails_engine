@@ -60,4 +60,32 @@ describe "Merchant API" do
     expect(merchant_name).to_not have_key(:created_at)
     expect(merchant_name).to_not have_key(:updated_at)
   end
+
+  it "can find a merchant by name" do
+    merch_1 = Merchant.create!(name: "Colin")
+    merch_2 = Merchant.create!(name: "Burke")
+    merch_3 = Merchant.create!(name: "Reinhart")
+
+    headers = { "CONTENT_TYPE" => 'application/json'}
+    get "/api/v1/merchants/find", headers: headers, params: { name: 'Col'}
+
+    expect(response.status).to eq(200)
+
+    parsed = JSON.parse(response.body, symbolize_names: true)
+
+    expect(parsed).to have_key(:data)
+    expect(parsed).to be_a(Hash)
+
+    expect(parsed[:data]).to have_key(:id)
+    expect(parsed[:data]).to have_key(:type)
+    expect(parsed[:data]).to have_key(:attributes)
+
+    expect(parsed[:data][:id]).to be_a(String)
+    expect(parsed[:data][:type]).to be_a(String)
+    expect(parsed[:data][:attributes]).to be_a(Hash)
+
+    name = parsed[:data][:attributes][:name]
+
+    expect(name).to eq("Colin")
+  end
 end
