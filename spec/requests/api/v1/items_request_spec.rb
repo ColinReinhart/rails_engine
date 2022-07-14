@@ -137,4 +137,43 @@ RSpec.describe "Items API" do
     expect(Item.first.description).to eq("Item Description")
     expect(Item.first.unit_price).to eq(314.15)
   end
+
+  it "create sad path" do
+    merch_id = create(:merchant).id
+
+    params = {
+      name: "",
+      description: "Item Description",
+      unit_price: 314.15,
+      merchant_id: merch_id
+    }
+
+    headers = { 'CONTENT_TYPE' => 'application/json' }
+
+    post '/api/v1/items', headers: headers, params: JSON.generate(item: params)
+
+    expect(response.status).to eq(400)
+  end
+
+  it "update sad paths" do
+    merch_id = create(:merchant).id
+    item = create(:item, merchant_id: merch_id)
+
+    expect(item.name).to_not eq("Item Name")
+    expect(item.description).to include("Chuck")
+    expect(item.unit_price).to_not eq(314.15)
+
+    params = {
+      name: "Item Name",
+      description: "Item Description",
+      unit_price: 314.15,
+      merchant_id: merch_id
+    }
+
+    headers = { 'CONTENT_TYPE' => 'application/json' }
+
+    put "/api/v1/items/1", headers: headers, params: JSON.generate(item: params)
+
+    expect(response.status).to eq(404)
+  end
 end

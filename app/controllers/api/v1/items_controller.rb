@@ -28,11 +28,6 @@ class Api::V1::ItemsController < ApplicationController
     if Item.exists?(params[:id])
       item = Item.find(params[:id])
       item.update(item_params)
-      if item.save
-        render json: ItemSerializer.new(item)
-      else
-        render status: 404
-      end
     else
       render status: 404
     end
