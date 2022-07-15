@@ -5,6 +5,14 @@ class Merchant < ApplicationRecord
 
   def self.find_name(input)
     merchant = Merchant.find_by('name ILIKE ?', "%#{input}%")
-    MerchantSerializer.new(merchant)
+    if merchant.nil?
+      { data: {} }
+    else
+      MerchantSerializer.new(merchant)
+    end
+  end
+
+  def self.find_all_name(input)
+    Merchant.where("name ILIKE ?", "%#{input}%")
   end
 end

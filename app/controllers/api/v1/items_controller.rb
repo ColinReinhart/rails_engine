@@ -33,6 +33,15 @@ class Api::V1::ItemsController < ApplicationController
     end
   end
 
+  def find_all
+    find_names = Item.find_all_name(params[:name])
+    render json: ItemSerializer.new(find_names)
+  end
+
+  def find
+    render json: Item.find_name(params[:name])
+  end
+
   private
     def item_params
       params.require(:item).permit(:name, :description, :unit_price, :merchant_id)

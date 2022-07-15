@@ -88,4 +88,35 @@ describe "Merchant API" do
 
     expect(name).to eq("Colin")
   end
+
+  it "can find all merchants by name fragment" do
+    merch_1 = Merchant.create!(name: "Colin's Clothes")
+    merch_2 = Merchant.create!(name: "Colin's Hats")
+    merch_3 = Merchant.create!(name: "Bob's Hats")
+
+    headers = { "CONTENT_TYPE" => 'application/json'}
+    get "/api/v1/merchants/find_all", headers: headers, params: { name: 'Col'}
+
+    expect(response.status).to eq(200)
+
+    parsed = JSON.parse(response.body, symbolize_names: true)
+    
+    expect(parsed).to have_key(:data)
+
+    array = parsed[:data]
+
+    expect(array).to be_a(Array)
+    expect(array.first).to have_key(:id)
+    expect(array.first).to have_key(:type)
+    expect(array.first).to have_key(:attributes)
+
+    expect(array.first[:id]).to be_a(String)
+    expect(array.first[:type]).to be_a(String)
+    expect(array.first[:attributes]).to be_a(Hash)
+
+    merchant = array.first[:attributes]
+
+    expect(merchant).to have_key(:name)
+    expect(merchant[:name]).to eq("Colin's Clothes")
+  end
 end

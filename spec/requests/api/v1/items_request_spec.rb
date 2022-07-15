@@ -176,4 +176,69 @@ RSpec.describe "Items API" do
 
     expect(response.status).to eq(404)
   end
+
+  it "can find all items by name fragment" do
+    merch_id = create(:merchant).id
+    item_1 = Item.create!(name: "Colin's hat", description: "The hat Colin is wearing right now", unit_price: 1000.00, merchant_id: merch_id )
+    item_2 = Item.create!(name: "Colin's shirt", description: "The shirt Colin is wearing right now", unit_price: 1020.00, merchant_id: merch_id )
+    item_3 = Item.create!(name: "Bob's hat", description: "The hat Bob is wearing right now", unit_price: 1000.00, merchant_id: merch_id )
+
+    headers = { "CONTENT_TYPE" => 'application/json'}
+    get "/api/v1/items/find_all", headers: headers, params: { name: "Colin's"}
+
+    expect(response.status).to eq(200)
+
+    parsed = JSON.parse(response.body, symbolize_names: true)
+    expect(parsed).to have_key(:data)
+
+    array = parsed[:data]
+
+    expect(array).to be_a(Array)
+    expect(array.first).to have_key(:id)
+    expect(array.first).to have_key(:type)
+    expect(array.first).to have_key(:attributes)
+
+    expect(array.first[:id]).to be_a(String)
+    expect(array.first[:type]).to be_a(String)
+    expect(array.first[:attributes]).to be_a(Hash)
+
+    expect(array.last[:attributes][:name]).to eq("Colin's shirt")
+  end
+
+  it "can find one item by name fragment" do
+    merch_1 = Merchant.create!(name: "Colin")
+    item_1 = Item.create!(name: "Colin's hat", description: "The hat Colin is wearing right now", unit_price: 1000.00, merchant_id: merch_1.id )
+    item_2 = Item.create!(name: "Colin's shirt", description: "The shirt Colin is wearing right now", unit_price: 1020.00, merchant_id: merch_1.id )
+    item_3 = Item.create!(name: "Bob's hat", description: "The hat Bob is wearing right now", unit_price: 1000.00, merchant_id: merch_1.id )
+
+    headers = { "CONTENT_TYPE" => 'application/json'}
+    get "/api/v1/items/find", headers: headers, params: { name: 'Col'}
+
+    expect(response.status).to eq(200)
+
+    parsed = JSON.parse(response.body, symbolize_names: true)
+
+    expect(parsed).to have_key(:data)
+
+    item = parsed[:data]
+
+    expect(item).to have_key(:id)
+    expect(item).to have_key(:type)
+    expect(item).to have_key(:attributes)
+
+    expect(item[:id]).to be_a(String)
+    expect(item[:type]).to be_a(String)
+    expect(item[:attributes]).to be_a(Hash)
+
+    attributes = item[:attributes]
+
+    expect(attributes).to have_key(:name)
+    expect(attributes).to have_key(:description)
+    expect(attributes).to have_key(:unit_price)
+    expect(attributes).to have_key(:merchant_id)
+
+    expect(attributes[:name]).to eq("Colin's hat")
+    expect(attributes[:description]).to eq("The hat Colin is wearing right now")
+    expect(attributes[:unit_price]).to eq(1000.0)
+  end
 end
