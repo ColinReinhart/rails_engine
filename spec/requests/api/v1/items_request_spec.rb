@@ -364,4 +364,20 @@ RSpec.describe "Items API" do
     expect(first_item[:description]).to eq("The hat of Colin")
     expect(first_item[:unit_price]).to eq(10.00)
   end
+
+  it "returns error if no name is given" do
+    get "/api/v1/items/find_all", headers: headers, params: { name: "" }
+
+    expect(response.status).to eq(400)
+  end
+
+  it "return error if no data is given" do
+    merch_1 = Merchant.create!(name: "Colin")
+    item_1 = Item.create!(name: "Colin's hat", description: "The hat of Colin", unit_price: 10.00, merchant_id: merch_1.id )
+    item_2 = Item.create!(name: "Colin's shirt", description: "The shirt of Colin", unit_price: 15.00, merchant_id: merch_1.id )
+    item_3 = Item.create!(name: "Bob's hat", description: "The hat of Bob", unit_price: 20.00, merchant_id: merch_1.id )
+    get "/api/v1/items/find_all"
+
+    expect(response.status).to eq(400)
+  end
 end

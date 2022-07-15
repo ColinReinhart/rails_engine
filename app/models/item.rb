@@ -1,4 +1,6 @@
 class Item < ApplicationRecord
+  before_destroy :destroy_invoices
+
   belongs_to :merchant
 
   has_many :invoice_items
@@ -32,4 +34,11 @@ class Item < ApplicationRecord
   def self.under_price(max)
     Item.where( 'unit_price < ?', max)
   end
+
+  private
+    def destroy_invoices
+      invoices.each do |invoice|
+        invoice.destroy if invoice.items.length == 1
+      end
+    end
 end

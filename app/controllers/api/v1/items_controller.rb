@@ -35,8 +35,12 @@ class Api::V1::ItemsController < ApplicationController
 
   def find_all
     if params[:name]
-      find_names = Item.find_all_name(params[:name])
-      render json: ItemSerializer.new(find_names)
+      if params[:name] == ""
+        render status: 400
+      else
+        find_names = Item.find_all_name(params[:name])
+        render json: ItemSerializer.new(find_names)
+      end
     elsif params[:min_price] && params[:max_price]
       range = Item.within_price_range(params[:min_price], params[:max_price])
       render json: ItemSerializer.new(range)

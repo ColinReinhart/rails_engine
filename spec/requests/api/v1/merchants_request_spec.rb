@@ -100,7 +100,7 @@ describe "Merchant API" do
     expect(response.status).to eq(200)
 
     parsed = JSON.parse(response.body, symbolize_names: true)
-    
+
     expect(parsed).to have_key(:data)
 
     array = parsed[:data]
@@ -118,5 +118,18 @@ describe "Merchant API" do
 
     expect(merchant).to have_key(:name)
     expect(merchant[:name]).to eq("Colin's Clothes")
+  end
+
+  it "returns empty api if merchant not found" do
+    merch_1 = Merchant.create!(name: "Colin's Clothes")
+
+    headers = { "CONTENT_TYPE" => 'application/json'}
+    get "/api/v1/merchants/find_all", headers: headers, params: { name: '123'}
+
+    expect(response.status).to eq(200)
+
+    parsed = JSON.parse(response.body, symbolize_names: true)
+
+    expect(parsed).to eq({:data=>[]})
   end
 end
