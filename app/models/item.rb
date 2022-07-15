@@ -20,4 +20,16 @@ class Item < ApplicationRecord
       ItemSerializer.new(item)
     end
   end
+
+  def self.within_price_range(min, max)
+    Item.where( unit_price: min..max )
+  end
+
+  def self.above_price(min)
+    Item.where( 'unit_price > ?', min)
+  end
+
+  def self.under_price(max)
+    Item.where( 'unit_price < ?', max)
+  end
 end

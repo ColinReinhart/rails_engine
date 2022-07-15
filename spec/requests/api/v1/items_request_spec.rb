@@ -207,9 +207,9 @@ RSpec.describe "Items API" do
 
   it "can find one item by name fragment" do
     merch_1 = Merchant.create!(name: "Colin")
-    item_1 = Item.create!(name: "Colin's hat", description: "The hat Colin is wearing right now", unit_price: 1000.00, merchant_id: merch_1.id )
-    item_2 = Item.create!(name: "Colin's shirt", description: "The shirt Colin is wearing right now", unit_price: 1020.00, merchant_id: merch_1.id )
-    item_3 = Item.create!(name: "Bob's hat", description: "The hat Bob is wearing right now", unit_price: 1000.00, merchant_id: merch_1.id )
+    item_1 = Item.create!(name: "Colin's hat", description: "The hat of Colin", unit_price: 10.00, merchant_id: merch_1.id )
+    item_2 = Item.create!(name: "Colin's shirt", description: "The shirt of Colin", unit_price: 15.00, merchant_id: merch_1.id )
+    item_3 = Item.create!(name: "Bob's hat", description: "The hat of Bob", unit_price: 20.00, merchant_id: merch_1.id )
 
     headers = { "CONTENT_TYPE" => 'application/json'}
     get "/api/v1/items/find", headers: headers, params: { name: 'Col'}
@@ -238,7 +238,130 @@ RSpec.describe "Items API" do
     expect(attributes).to have_key(:merchant_id)
 
     expect(attributes[:name]).to eq("Colin's hat")
-    expect(attributes[:description]).to eq("The hat Colin is wearing right now")
-    expect(attributes[:unit_price]).to eq(1000.0)
+    expect(attributes[:description]).to eq("The hat of Colin")
+    expect(attributes[:unit_price]).to eq(10.0)
+  end
+
+  it "can find items within a price range" do
+    merch_1 = Merchant.create!(name: "Colin")
+    item_1 = Item.create!(name: "Colin's hat", description: "The hat of Colin", unit_price: 10.00, merchant_id: merch_1.id )
+    item_2 = Item.create!(name: "Colin's shirt", description: "The shirt of Colin", unit_price: 15.00, merchant_id: merch_1.id )
+    item_3 = Item.create!(name: "Bob's hat", description: "The hat of Bob", unit_price: 20.00, merchant_id: merch_1.id )
+
+    headers = { "CONTENT_TYPE" => 'application/json'}
+    get "/api/v1/items/find_all", headers: headers, params: { min_price: 9.00, max_price: 16.00 }
+
+    expect(response.status).to eq(200)
+
+    parsed = JSON.parse(response.body, symbolize_names: true)
+
+    expect(parsed).to have_key(:data)
+    expect(parsed[:data]).to be_a(Array)
+
+    array = parsed[:data]
+
+    expect(array.length).to eq(2)
+
+    array.each do |item|
+      expect(item).to have_key(:id)
+      expect(item).to have_key(:type)
+      expect(item).to have_key(:attributes)
+
+      expect(item[:id]).to be_a(String)
+      expect(item[:type]).to be_a(String)
+      expect(item[:attributes]).to be_a(Hash)
+    end
+
+    first_item = array.first[:attributes]
+
+    expect(first_item).to have_key(:name)
+    expect(first_item).to have_key(:description)
+    expect(first_item).to have_key(:unit_price)
+
+    expect(first_item[:name]).to eq("Colin's hat")
+    expect(first_item[:description]).to eq("The hat of Colin")
+    expect(first_item[:unit_price]).to eq(10.00)
+  end
+
+  it "can find an item over a price" do
+    merch_1 = Merchant.create!(name: "Colin")
+    item_1 = Item.create!(name: "Colin's hat", description: "The hat of Colin", unit_price: 10.00, merchant_id: merch_1.id )
+    item_2 = Item.create!(name: "Colin's shirt", description: "The shirt of Colin", unit_price: 15.00, merchant_id: merch_1.id )
+    item_3 = Item.create!(name: "Bob's hat", description: "The hat of Bob", unit_price: 20.00, merchant_id: merch_1.id )
+
+    headers = { "CONTENT_TYPE" => 'application/json'}
+    get "/api/v1/items/find_all", headers: headers, params: { min_price: 10.00 }
+
+    expect(response.status).to eq(200)
+
+    parsed = JSON.parse(response.body, symbolize_names: true)
+
+    expect(parsed).to have_key(:data)
+    expect(parsed[:data]).to be_a(Array)
+
+    array = parsed[:data]
+
+    expect(array.length).to eq(2)
+
+    array.each do |item|
+      expect(item).to have_key(:id)
+      expect(item).to have_key(:type)
+      expect(item).to have_key(:attributes)
+
+      expect(item[:id]).to be_a(String)
+      expect(item[:type]).to be_a(String)
+      expect(item[:attributes]).to be_a(Hash)
+    end
+
+    first_item = array.first[:attributes]
+
+    expect(first_item).to have_key(:name)
+    expect(first_item).to have_key(:description)
+    expect(first_item).to have_key(:unit_price)
+
+    expect(first_item[:name]).to eq("Colin's shirt")
+    expect(first_item[:description]).to eq("The shirt of Colin")
+    expect(first_item[:unit_price]).to eq(15.00)
+  end
+
+  it "can find an item under a price" do
+    merch_1 = Merchant.create!(name: "Colin")
+    item_1 = Item.create!(name: "Colin's hat", description: "The hat of Colin", unit_price: 10.00, merchant_id: merch_1.id )
+    item_2 = Item.create!(name: "Colin's shirt", description: "The shirt of Colin", unit_price: 15.00, merchant_id: merch_1.id )
+    item_3 = Item.create!(name: "Bob's hat", description: "The hat of Bob", unit_price: 20.00, merchant_id: merch_1.id )
+
+    headers = { "CONTENT_TYPE" => 'application/json'}
+    get "/api/v1/items/find_all", headers: headers, params: { max_price: 16.00 }
+
+    expect(response.status).to eq(200)
+
+    parsed = JSON.parse(response.body, symbolize_names: true)
+
+    expect(parsed).to have_key(:data)
+    expect(parsed[:data]).to be_a(Array)
+
+    array = parsed[:data]
+
+    expect(array.length).to eq(2)
+
+    array.each do |item|
+      expect(item).to have_key(:id)
+      expect(item).to have_key(:type)
+      expect(item).to have_key(:attributes)
+
+      expect(item[:id]).to be_a(String)
+      expect(item[:type]).to be_a(String)
+      expect(item[:attributes]).to be_a(Hash)
+    end
+
+    first_item = array.first[:attributes]
+
+    expect(first_item).to have_key(:name)
+    expect(first_item).to have_key(:description)
+    expect(first_item).to have_key(:unit_price)
+
+    expect(first_item[:name]).to eq("Colin's hat")
+    expect(first_item[:description]).to eq("The hat of Colin")
+    expect(first_item[:unit_price]).to eq(10.00)
   end
 end
