@@ -28,6 +28,7 @@ class Api::V1::ItemsController < ApplicationController
     if Item.exists?(params[:id])
       item = Item.find(params[:id])
       item.update(item_params)
+      item.save
     else
       render status: 404
     end
