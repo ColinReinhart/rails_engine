@@ -1,10 +1,10 @@
 class Item < ApplicationRecord
-  before_destroy :destroy_invoices
-
   belongs_to :merchant
 
   has_many :invoice_items
   has_many :invoices, through: :invoice_items
+  has_many :transactions, through: :invoices
+  has_many :customers, through: :transactions
 
   validates_presence_of :name
   validates_presence_of :description

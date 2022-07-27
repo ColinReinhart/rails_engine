@@ -16,4 +16,9 @@ class Api::V1::MerchantsController < ApplicationController
     render json: MerchantSerializer.new(find_names)
   end
 
+  def most_items
+    merchants = Merchant.top_merchants_by_items_sold(params[:quantity])
+    render json: MerchantNameMostItemsSerializer.new(merchants)
+  end
+
 end
